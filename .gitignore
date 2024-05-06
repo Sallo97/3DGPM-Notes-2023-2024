@@ -1,7 +1,8 @@
 */
-!LateX Notes/*
+!LateX Notes/
+/LateX Notes/*
+!/LateX Notes/**
+
 !exercises/*
-!
-
-
-./Polygon Mesh Processing (Mario Botsch, Leif Kobbelt, Mark Pauly etc.).pdf
+/exercises/*
+!/exercises/**

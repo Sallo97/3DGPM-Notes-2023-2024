@@ -1,0 +1,147 @@
+\chapter{Representing Surfaces}
+We talk about modeling surfaces because most of the object we see are opaque, thus from the point of view of rendering them we are only interested in their external surface \textbf{since we never see what is inside them}.\par
+Formally the main aim of Computer Graphics is representing the boundary surface between the objects and non-objects.
+
+\section{Defining Surfaces}
+There are two methods of defining surfaces: Analytic definitions and Approximated definitions.
+
+\subsection{Analytic Definitions}
+In the analytic definitions that try to define the surface by using a mathematical (exact) notation.\par
+There are two way to represent a surface in a 3D space using mathematical notation:
+\begin{itemize}
+    \item \textbf{Parametric representation:} it consists in a function $S : \mathbb{R}^{2} \rightarrow \mathbb{R}^{3}$ that maps points on a 2D domain over a 3D surface.  
+    \item \textbf{Implicit representation:} I define the surface $S$ as the zeros of a function $f: \mathbb{R}^{3} \rightarrow \mathbb{R}$ s.t.:
+        \begin{equation*}
+            S = \{p \in \mathbb{R}^{3}: f(p) = 0\}
+        \end{equation*}
+\end{itemize}
+
+\subsection{Drawbacks of Analytic Definitions}
+The main limitation of analytic definitions is that realistic surfaces are not made of simple shape, making intractable defining a parametric/implicit representation of them.\par
+To overcome this limitation we introduce the concept of mesh.
+
+\section{Meshes}
+Before defining meshes we need to introduce the concept of cellular complex.
+
+\subsection{Cellular Complex}
+A cellular complex, in mathematics and topology, refers to a structure composed of cells (convex polytope) of various dimensions, such as vertices (0-dimensional cells), edges (1-dimensional cells), faces (2-dimensional cells), and higher-dimensional cells. These cells are glued together according to certain rules or combinatorial data. After the second dimension we begin to consider solid 3D object (meaning their inside is not empty), usually used in simulation scenarios.
+
+\subsubsection{Properties of Cell Complex}
+\begin{itemize}
+    \item The order of a cell is the number of its sides. Sides are defined as boundaries of the higher-dimensional cells within the complex.
+    \item a complex is a k-complex if the maximum of the order of its cells is k.
+\end{itemize}
+
+
+\subsection{Definition of Meshes}
+Meshes are based upon the formalisation of cellular complex. Meshes are a set of polygons (usually they are triangles or four-sided polygons) that approximate my surface.\par
+We say that a cellular complex is a mesh if and only if it satisfies the following rules:
+\begin{itemize}
+    \item Every face of a cell belongs to the complex
+    \item $\forall$ cells $C \land C^{'}$ their intersection is either empty or is a common face of both. This means that two cells either do not touch, or they must have at most edges/vertices/faces in their boundaries in common (I cannot have a faces defined inside another face). 
+    \item a cell is maximal if it is not a face of another cell.
+\end{itemize}
+
+\subsection{Maximal Cell Complex}
+Given a cell complex we can say that it is a maximal cell complex if and only if all of its maximal cells have order k. In general, since we mostly will talk about 2 dimension cellular complex, it will amount in checking if there are no dangling edges.
+
+\section{Simplicial Complex}
+Simplicial Complex are a specific case of Cellular Complex where I limit the faces to be triangles or 2-simplex.\par
+Triangles are really convenient because they have some convenient properties:
+
+\begin{itemize}
+    \item The number of edges in a triangles is always three. 
+    \item A triangle has three vertices and \textbf{three points in a topological space always define a plane}. So every 2-simplex defines a plane. Consider for points in a space, these four points does not imply the existence of a plane that touches all of them (to do it I have to make assumption and defining some rules).
+\end{itemize}
+
+\subsection{Face}
+Given a simplex $\sigma$, we say that the simplex $\sigma^{'}$ is a face (or sub-simplex) of $\sigma$ if it is defined by a subset of vertices of $\sigma$. If $\sigma^{'}$ is a face of $\sigma$ and $\sigma \neq \sigma^{'}$, then it is a proper face.
+
+\subsection{Collection of simplexes}
+A collection of simplexes $\Sigma$ is a simplicial k-complex if and only if:
+\begin{itemize}
+    \item $\forall \sigma_{1}, \sigma_{2} \in \Sigma . \sigma_{1} \cap \sigma_{2} \neq 0 \Rightarrow \sigma_{1} \cap \sigma_{2}$ is a simplex of $\Sigma$.
+    \item $\forall \sigma \in \Sigma$ all the faces of $\sigma$ belong to $\Sigma$.
+    \item k is the maximum degree (order) of simplexes in $\Sigma$.
+\end{itemize}
+
+There are the following properties:
+\begin{itemize}
+    \item A simplex $\sigma$ is maximal in a simplicial complex $\Sigma$ if it is not a proper face of another simplex $\sigma^{'}$ of $\Sigma$.
+    \item A simplician k-complex $\Sigma$ is maximal if all its maximal simplex are of order k (there are no dangling lower dimensional pieces).
+\end{itemize}
+
+\section{Meshes}
+When talking about triangle meshes the intended meaning is a maximal 2-simplicial complex, but in reality is not always true (in most cases I have some extra vertices in our space).
+
+\section{Manifoldess}
+Manifoldess is one of the main property to check in a simplicial complex.\par
+Given a surface $S$ iff $\forall$ point in $S$ if I take its neighborhood, then the neighborhood is homeomorphic to the Euclidean space in two dimension. In practice this means that the neighborhood of each point needs to be homeomorphic to a disk (or a semidisk if the surface has boundaries).\par
+
+There are two interesting cases where a surface is not manifold:
+\begin{itemize}
+    \item When in the surface there are at least three triangles sharing a common edge.
+    \item When in the surface there is at least an hourglass waist, meaning two triangles shares just a vertex (or two cubes touching in just one edge).
+\end{itemize}
+
+\section{Orientability}
+A surface $S$ is orientable if it is possible to make a consistent choice for the normal vector. In practice it means that starting from a face with a normal, I should be able to propagate this normal for all the faces near it and the faces near the faces near it.
+
+\section{Incidency}
+Given two simplexes $\sigma, \sigma^{'}$, if $\sigma$ is a proper face of $\sigma^{'}$ then $\sigma, \sigma^{'}$ are incident.
+
+\section{Adjacency}
+Given two k-simplexes $\sigma, \sigma^{'}$ and $m<k$, if there exists a m-simplex that is a proper face of both $\sigma, \sigma^{'}$, then $\sigma, \sigma^{'}$ are m-adjacent.\par
+Note:
+\begin{itemize}
+    \item Two triangles sharing an edge are 1-adjacent.
+    \item Two triangles sharing a vertex are 0-adjacent.
+\end{itemize}
+
+There are three classes of adjacency relations, identified by a pair of letters where each of them refers to one of the entity involved in the relation:
+
+\begin{itemize}
+    \item \textbf{FF:} refers to an adjacency between triangular \textbf{F}aces (so they touch in an edge). It corresponds to the 1-adjacency.
+    
+    \item \textbf{EE:} it moves from one \textbf{E}dge to another following the vertices that connects them. It corresponds to the 0-adjacency.
+
+    \item \textbf{FE:} it refers to the proper subfaces of a \textbf{F}ace that have dimension 1.
+    
+    \item \textbf{FV:} adjacency from \textbf{F}aces to \textbf{V}ertices (e.g. the vertices composing a face). It refers to the proper subfaces of a \textbf{F}ace with dimension 0.
+
+    \item \textbf{EV:} given an \textbf{E}dge in returns its two \textbf{V}ertices. It refers to the propert subface of the \textbf{E}dge with dimension 0.
+    
+    \item \textbf{VF:} adjacency from a \textbf{V}ertex to a \textbf{F}ace (e.g. the triangles incident on a vertex). It refers to the $\{F \in Faces | V $ is a proper subface of $F\}$.
+
+    \item \textbf{VE:} given a vertex it returns all the edges that utilize it. Its the set $\{ E \in Edges : V $ is a proper subface of $E \}$
+
+    \item \textbf{EF:} given an \textbf{E}dge it returns all the \textbf{F}aces that utilize it. If there are more than two \textbf{F}aces for an edge, then our mesh is not manifold. Its the set $\{F \in Faces | E$ is a proper subface of $F \}$.
+
+    \item \textbf{VV:} given a vertex it returns all the vertices that have edges in common. its the set $\{ V^{'} \in Vertices | \exists E:(V,V^{'})$ .
+\end{itemize}
+
+These relation are usually stored in the data structures of meshes. The idea is to store a subset of these relations (usually FF, FV and VF) and procedurally generate the rest.
+
+\section{Partial adiacency}
+For the sake of conciseness it can be useful to keep only partial sets of relations. This is done not only to save space, but also to have non-redundant sets that in complex situations are difficult to keep updating.\par
+For example $VF^{*}$ memorize only a reference from a vertex to a face and then surfs over the surface using $FF$ to find the other faces incident on $V$.
+
+\section{Bounds of Adjacency Relation}
+Most of the adjacency relation we have seen have bounds well defined. \par
+Given a two manifold simplicial 2-complex in $\mathbb{R}^{3}$:
+
+\begin{itemize}
+    \item $FV, FE, FF, EF, EV$ have bounded degree (meaning they are constants if there are no borders):
+        \begin{itemize}
+            \item $|FV| = 3, |EV| = 2, |FE| = 3$
+            \item $|FF| \leq 2$
+            \item $|EF| \leq 2$
+        \end{itemize}
+    \item $VV, VE, VF, EE$ have some average estimations:
+        \begin{itemize}
+            \item $|VV| \sim |VE| \sim |VF| \sim 6$
+            \item $|EE| \sim 10$
+            \item The number of \textbf{F}aces is usually double the number of \textbf{V}ertices.
+        \end{itemize}
+\end{itemize}
+
