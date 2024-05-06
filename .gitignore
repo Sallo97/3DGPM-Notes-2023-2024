@@ -3,6 +3,5 @@
 /LateX Notes/*
 !/LateX Notes/**
 !exercises/*
-/exercises/*
 !/exercises/**
 .DS_Store
