@@ -1,0 +1,3 @@
+/Users/sallo/Documents/University/Courses/3D_Geometric_Modelling_and_Processing/exercises/es4/CMakeFiles/new.dir
+/Users/sallo/Documents/University/Courses/3D_Geometric_Modelling_and_Processing/exercises/es4/CMakeFiles/edit_cache.dir
+/Users/sallo/Documents/University/Courses/3D_Geometric_Modelling_and_Processing/exercises/es4/CMakeFiles/rebuild_cache.dir
