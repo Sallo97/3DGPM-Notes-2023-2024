@@ -5,3 +5,4 @@
 !exercises/*
 /exercises/*
 !/exercises/**
+.DS_Store
