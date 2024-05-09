@@ -17,23 +17,26 @@ There are two way to represent a surface in a 3D space using mathematical notati
 \end{itemize}
 
 \subsection{Drawbacks of Analytic Definitions}
-The main limitation of analytic definitions is that realistic surfaces are not made of simple shape, making intractable defining a parametric/implicit representation of them.\par
-To overcome this limitation we introduce the concept of mesh.
+The main limitation of analytic definitions is that for realistic surfaces, meaning any surface that is not a simple object like a sphere or a cube, is not fesable to find an explicit formulation with a single function that approximates a given shape with sufficient accuracy. To overcome this we define the surface \textbf{piecewise}, that is we identify it as being composed of smaller sub-region. By doing so we subdivide the function domain of the surface into smaller sub-regions and for each of them we define an individual function called \textbf{surface patch} that represent that segment. Each surface patch is only interested at approximating its sub-region locally, while the global approximation tolerance is controller by the size and number of segments.
 
-\section{Meshes}
-Before defining meshes we need to introduce the concept of cellular complex.
+\section{Parametric Representation}
+A Parametric Surface is defined by a function $f: \omega \rightarrow S$ where:
+\begin{itemize}
+    \item $\omega$ is a 2D parameter domain s.t. $\omega \subset \mathbb{R}^{2}$
+    \item $S$ is a 3D parameter domain obtained by applying $\omega$ to $f$ s.t. $S = f(\omega) \subset \mathbb{R}^{3}$
+\end{itemize}
 
-\subsection{Cellular Complex}
+\section{Cellular Complex}
 A cellular complex, in mathematics and topology, refers to a structure composed of cells (convex polytope) of various dimensions, such as vertices (0-dimensional cells), edges (1-dimensional cells), faces (2-dimensional cells), and higher-dimensional cells. These cells are glued together according to certain rules or combinatorial data. After the second dimension we begin to consider solid 3D object (meaning their inside is not empty), usually used in simulation scenarios.
 
-\subsubsection{Properties of Cell Complex}
+\subsection{Properties of Cell Complex}
 \begin{itemize}
     \item The order of a cell is the number of its sides. Sides are defined as boundaries of the higher-dimensional cells within the complex.
     \item a complex is a k-complex if the maximum of the order of its cells is k.
 \end{itemize}
 
 
-\subsection{Definition of Meshes}
+\section{Definition of Meshes}
 Meshes are based upon the formalisation of cellular complex. Meshes are a set of polygons (usually they are triangles or four-sided polygons) that approximate my surface.\par
 We say that a cellular complex is a mesh if and only if it satisfies the following rules:
 \begin{itemize}
@@ -71,18 +74,47 @@ There are the following properties:
     \item A simplician k-complex $\Sigma$ is maximal if all its maximal simplex are of order k (there are no dangling lower dimensional pieces).
 \end{itemize}
 
-\section{Meshes}
-When talking about triangle meshes the intended meaning is a maximal 2-simplicial complex, but in reality is not always true (in most cases I have some extra vertices in our space).
+\section{Triangle Meshes}
+When talking about triangle meshes the intended meaning is a maximal 2-simplicial complex, but in reality is not always true (in most cases I have some extra vertices in our space). Triangle meshes are considered a collection of triangles where each triangle define via its barycentic parametrization a segment of a piecewise linear surface representation.\par
+A triangle is identified by its three vertex $[a,b,c]$. We can identify every point $p$ in the interior of a triangles as a barycentric combination of the corner points:
+\begin{equation*}
+    p = \alpha a + \beta b + \gamma c
+\end{equation*}
+where:
+\begin{equation*}
+    \alpha + \beta + \gamma = 1, \ \ \ \alpha,\beta,\gamma \geq 0
+\end{equation*}
+
+A triangle mesh is composed of a geometric and topological component.
+
+\subsection{Topological component}
+A triangle mesh can be represented topologically is a simplicial complex that ir represented by a graph structure with a set of vertices:
+\begin{equation*}
+    \mathcal{V} = \{v_{1}, ..., v_{V}\}    
+\end{equation*}
+ and a set of triangular faces connecting them:
+ \begin{equation*}
+     \mathcal{F} = \{f_{1}, ..., f_{F}\} \ \ s.t. \ \ f_{i} \in \mathcal{V} \times \mathcal{V} \times \mathcal{V}
+ \end{equation*}
+
+ Each vertex is associated to a 3D position $p_{i}$ s.t.:
+
+\begin{equation*}
+    \mathcal{P} = \{p_{1}, ..., p_{V}\}, p_{i} := p(v_{i}) = (x(v_{i}), y(v_{i}), z(v_{i})) \in \mathbb{R}^{3}
+\end{equation*}
+
 
 \section{Manifoldess}
 Manifoldess is one of the main property to check in a simplicial complex.\par
 Given a surface $S$ iff $\forall$ point in $S$ if I take its neighborhood, then the neighborhood is homeomorphic to the Euclidean space in two dimension. In practice this means that the neighborhood of each point needs to be homeomorphic to a disk (or a semidisk if the surface has boundaries).\par
 
-There are two interesting cases where a surface is not manifold:
+A surface is non-manifold if it has a non-manifold edge or a non-manifold vertex:
 \begin{itemize}
-    \item When in the surface there are at least three triangles sharing a common edge.
-    \item When in the surface there is at least an hourglass waist, meaning two triangles shares just a vertex (or two cubes touching in just one edge).
+    \item \textbf{non-manifold edge}: meaning there is no edge that has more than two incident triangles.
+    \item \textbf{non-manifold vertex:} is generated by pinching two surface sheets together at that vertex such that the vertex is incident to more that one fan of triangles. More intuitively a vertex is non-manifold it is in the middle of an hourglass shape
 \end{itemize}
+
+%put examples for page 12 book Polygon Mesh Processing%
 
 \section{Orientability}
 A surface $S$ is orientable if it is possible to make a consistent choice for the normal vector. In practice it means that starting from a face with a normal, I should be able to propagate this normal for all the faces near it and the faces near the faces near it.
@@ -145,3 +177,393 @@ Given a two manifold simplicial 2-complex in $\mathbb{R}^{3}$:
         \end{itemize}
 \end{itemize}
 
+\section{Implicit Representation}
+In implicit representations, surfaces are represented by classifying each 3D point in space for being either inside, outside or exactly on the surface $S$ that bounds a solid object (the contour).\par
+In an implicit representation the function $f: \mathbb{R}^{3} \rightarrow \mathbb{R}$ is defined in the implicit form $f(x,y,z) = c$ where $c$ is a constant usually set to $0$. For each point in the 3D space we sample its value according to $f$ and then:
+\begin{itemize}
+    \item If $f(x,y,z) > c$: then the point is outside of the surface.
+    \item If $f(x,y,z) = c$: then the point is exactly on the contour.
+    \item If $f(x,y,z) < c$: then the point is inside the surface.
+\end{itemize}
+If the function $f$ is continuous, then the implicit surface defines by it has no holes 
+
+\subsection{Queries in implicit representation}
+Identifying where a point $p$ lies in the surface is trivial: check if the value returned by $f(x(p), y(p), z(p))$ is positive, negative or equal to zero.
+
+\subsection{Operations on implicit representations}
+Implicit surfaces can be enlarged by decreasing the function values of $f$ locally and can be shrinked by increasing the function values of $f$ locally.
+
+\subsection{Drawbacks of implicit representations}
+The implicit function $f$ of a given surface $S$ is not uniquely determined. As an example consider the function $f(x,y,z) = 0$ where each point of the contour of the surface $S$ is defined by the point that return 0 in $f$. Now let us define the function $f^{'} = \lambda f$ and note that although they are scalarly different, they define the same point for the contour.\par
+Generating sample points on an implicit surface, finding geodesic neighborhoods, and even just rendering the surface is relatively difficult. Moreover, implicit surfaces do not provide any means of parameterization, which is why it is very difficult to consistently paste textures onto evolving implicit surfaces.
+
+\subsection{Representing a implicit surface}
+To represent a implicit surface we will use a \textbf{signed distance function} which maps each 3D point $x$ to its signed distance $d(x)$ from the surface $S$ s.t.:
+\begin{itemize}
+    \item if $d(x) > 0$: the point is outside $S$ and distant $|d(x)|$ from the contour.
+    \item if $d(x) < 0$: the point is inside $S$ and distant $|d(x)|$ from the contour.
+    \item if $d(x) = 0$: the point is in the contour.
+\end{itemize}
+
+\subsection{Regular Grids}
+To process implicit representation the continuous scalar field $f$ is discretized in some bounding box around the object by defining a sufficiently dense grid with nodes $g_{i,j,k} \in \mathbb{R}^{3}$
+
+\section{The Five Platonic Solids}
+A Platonic Solid defines a polyhedrons that is convex, regular polyhedron in three-dimensional Euclidean space. Being a regular polyhedron means that the faces are congruent (identical in shape and size) regular polygons (all angles congruent and all edges congruent), and the same number of faces meet at each vertex. There are only five such polyhedra.
+
+\subsection{Tetrahedron}
+The simplest regular polygon is the equilateral triangle, thus the simplest regular polyhedron is obtained by composing four equilateral triangles used as faces, six straight edges, and four vertices.
+
+%Mettere immagine tetraedro%
+
+\subsection{Octahedron}
+We can construct an octahedron by placing e two tetraedron one below the other. What we obtain is a regular polyhedron composed of eight faces (that are equilateral triangles), 12 straight edges, and 6 vertices.
+
+%Mettere immagine ottaedro%
+
+\subsection{Icosahedron}
+The icosahedron is obtained by taking a uniform pentagonal antiprism and attaching two pentagonal pyramids in both of its pentagonal faces. The generated solid has 20 \textbf{F}aces, 30 \textbf{E}dges and 12 \textbf{V}ertices.\par
+
+\subsubsection{Pentagonal antiprism}
+A pentagonal antiprism is constructed by a sequence of even-numbered triangle sides closed by two polygon caps. It consists of two pentagons joined to each other by a ring of ten triangles for a total of twelve faces. The generated solid has 12 \textbf{F}aces, 20 \textbf{E}dges and 10 \textbf{V}ertices.
+
+\subsubsection{Pentagonal Pyramid}
+A pentagonal pyramid is a pyramid with a pentagonal base upon which are erected five triangular faces that meet at a point (the apex).
+
+%Mettere immagine Icosaedro antiprisma pentagonale e piramide pentagonale.
+
+\subsection{Cube}
+The cube is the only regular hexahedron (meaning a polygon composed of six faces). It is composed of 6 square \textbf{F}aces, facets, or sides, with three meeting at each vertex. It has 12 \textbf{E}dges and 8 \textbf{V}ertices.
+
+%Mettere immagine cubo
+
+\subsection{Dodecahedron}
+A regular dodecahedron or pentagonal dodecahedron is a dodecahedron that is regular, which is composed of 12 regular pentagonal \textbf{F}aces, three meeting at each vertex. It has 12 \textbf{F}aces, 20 \textbf{V}ertices and 30 \textbf{E}dges.
+
+%Immagine dodecaedro
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+Solid & Vertices & Edges & Faces \\
+\hline
+Tetrahedron  & 4   & 6   & 4   \\
+Cube         & 12  & 8   & 6   \\
+Octahedron   & 6   & 12  & 8   \\
+Dodecahedron & 20  & 30  & 12  \\
+Icosahedron  & 12  & 30  & 20  \\    
+\hline
+\end{tabular}
+\caption{The five Platonic Solids}
+\label{tab:simple}
+\end{table}
+
+\section{Euler Characteristic}
+As the above table shows, it seems that there is a rules regarding the relation of their number of edges, vertices and faces. The Euler Characteristisc explain this relationship in a form of a constant $\chi$ that has the same value for every simply connected polyhedron:
+
+\begin{equation*}
+    \chi = V - E + F
+\end{equation*}
+where:
+\begin{itemize}
+    \item V is the number of vertices
+    \item E is the number of edges
+    \item F is the number of faces
+\end{itemize}
+
+Euler Characteristic work in every dimension.\par The formula is constructed by alternating the signs of the variables, starting by the number of vertices ($+V$), subtracting the number of edges ($-E$), adding the faces ($+F$) and so on if you are in a greater dimension. 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Solid & Vertices & Edges & Faces & $\chi$ \\
+\hline
+Tetrahedron  & 4   & 6   & 4  & 2  \\
+Cube         & 8  &  12  & 6  & 2 \\
+Octahedron   & 6   & 12  & 8  & 2 \\
+Dodecahedron & 20  & 30  & 12 & 2 \\
+Icosahedron  & 12  & 30  & 20 & 2 \\    
+\hline
+\end{tabular}
+\caption{The five Platonic Solids now with the Euler Characteristic $\chi$}
+\label{tab:simple}
+\end{table}
+
+\subsection{Intuition behind the Euler Characteristic}
+Let us give a small intuition behind the proof of the Euler Characteristic by construction:\par
+assume we have a simple tetrahedron, then by computing its Euler Characteristic we have:
+
+\begin{itemize}
+    \item 4 Vertices
+    \item 6 Edges
+    \item 4 Faces
+    \item $\chi = V - E + F = 4 - 6 + 4 = 2$
+\end{itemize}
+
+Then suppose we cut the tetrahedron at the top, obtaining a solid that at the top has no more a vertex, but three forming a triangle at the top. Now let us reason about what we have done by cutting the vertex at the top:
+
+\begin{itemize}
+    \item I have removed one vertex and added three by the cutting operation. So overall we have added two edges ($3 added - 1 removed = 2 added$).
+    \item Since the three new vertices form a triangle at the top, we have three new edges.
+    \item I new face is added which is the triangle we have obtained
+\end{itemize}
+
+Thus the new Euler Characteristic will be:
+
+\begin{equation*}
+    \chi = (V + 2) - (E + 3) + (F + 1) = (4 + 2) - (6 + 3) + (4 + 1) = 6 - 9 + 5 = 2
+\end{equation*}
+
+%metti immagine tetraedro tagliato%
+
+This shows that for whatever kind of modification I do on the tetrahedron on its number of edges, vertices and faces, \textbf{the Euler Characteristic remains constant.}\par
+
+Let us now consider an hallow cube where its hole has the shape of a parallelepiped.
+
+%metti immagine cubo cavo%
+
+Let us now count the faces of this solid:
+\begin{itemize}
+    \item At the sides we have 4 square faces.
+    \item at the top and bottom we have 8 trapezoid faces, 4 at the top and 4 at the bottom.
+    \item inside the hole of the cube we have 4 parallelogram faces
+\end{itemize}
+
+In total we have 16 faces.\par
+
+The vertices are 16, 8 at the top and 8 at the bottom.\par
+
+The edges are more complex to compute:
+\begin{itemize}
+    \item There are 8 vertical edges
+    \item There are 16 parallel and perpendicular edges, 8 at the top and 8 at the bottom.
+    \item We have 8 diagonal edges, 4 at the top and 4 at the bottom.
+\end{itemize}
+
+So overall we have 32 edges.\par
+Let us now compute the Euler Characteristic:
+\begin{equation*}
+    \chi = V - E + F = 16 - 32 + 16 = 0 
+\end{equation*}
+This seems strange, but it is correlated to another concept: \textbf{the genus}.
+
+\section{Genus}
+The Genus (in mathematics) is stricly connected to the Euler Characteristic. The Genus is a property of a solid that depends on its shape. The definition lies behind the idea that all the platonic solid can be transformed into a bullet by applying transformations that do not require splitting the surface of the solid in any parts. \par
+Consider now a solid that have at least one hole inside it, like a torus. To transform a sphere, a cube o any Platonic Solid into a torus we require to carve from them a hole, \textbf{causing a split}.
+Solid that can be transformed into one another without requiring any extra hole to be carved have the same genus. \textbf{Intuitively we can define the genus as the number of handles in the solid.}\par
+Formally the Genus of a closed, orientable and 2-manifold surface, is the maximum number of cuts we can make along non intersection closed curves without splitting the surface in two.
+
+\section{Theorem regarding the Euler Characteristic and the Genus}
+Given the genus of our surface $g$, we can compute the Euler Characteristic as follow:
+
+\begin{equation*}
+    \chi = 2 - 2g
+\end{equation*}
+
+If we consider the carved cube from the previous example, we now know that its genus $g = 1$ (intuitively note that it has a hole inside), thus:
+\begin{equation*}
+    \chi = V - E + F = 2 - 2g = 2 - 2 = 0
+\end{equation*} 
+In this way I can compute the Genus by just knowing the number of Faces, Vertices and Edges.
+
+\section{Considering open surfaces}
+Until now we have only considered closed surfaces (meaning without any hole that is not a handle). Consider the cube we have seen previously, removing one of the faces in its side.
+
+%Mettere immagine cubo bucato%
+
+Considering its number of Vertices, Edges and Faces now we have:
+\begin{itemize}
+    \item 16 Vertices
+    \item 32 Edges
+    \item 15 Faces
+\end{itemize}
+Note how the number of vertices and edges has remained the same, only the faces have decreased by one. Now computing the Euler Characteristic we get:
+\begin{equation*}
+    \chi = V - E + F = 16 - 32 + 15 = -1
+\end{equation*}
+
+The reason behind this result lies in the concept of borders of a surface.
+
+\subsubsection{Borders of the surface}
+With borders of a surface we intend the number of continuous borders in the surface, meaning that in the case of the cube we have seen there is only 1 made of 4 continuous edges.
+
+\subsection{Euler Characteristic for open surfaces}
+When a surface is open the Euler Characteristic depends from the Genus $g$ and form the number of borders $b$ of the surface:
+
+\begin{equation*}
+    \chi = V - E + F = 2 - 2g - b
+\end{equation*}
+
+\subsubsection{Intuition behind the Euler Characteristic for open surfaces}
+Given an open surface with a border s.t. its Euler Characteristic is $\chi = V - E + F$. Suppose now to close the border by adding a new vertex and connecting all the k vertices on the border to it. Now we want to compute  with $\chi^{'}$ the Euler Characteristic of the now closed surface, consider its added vertices $V^{'}$, edges $E^{'}$ and faces $F^{'}$:
+\begin{itemize}
+    \item $V^{'} = 1$ since we added one vertex to close the surface.
+    \item $E^{'} = k$ since for each of the k edges of the border we made an edge connecting it to the new vertex.
+    \item $V^{'} = k$ since for each edge we constructed to close the border we define a face.
+\end{itemize}
+
+Thus the new Euler Characteristic is:
+\begin{equation*}
+    \chi^{'} = \chi + V^{'} - E^{'} + F^{"} = X + 1 - k + k = \chi + 1
+\end{equation*}
+So by considering the equation from $\chi$ we obtain:
+\begin{equation*}
+    \chi = \chi^{'} - 1
+\end{equation*}
+Since we know that the number of borders of the open cube is $b = 1$. Knowing that $\chi^{'}$ is closed, then we can compute its Euler Characteristic as $\chi^{'} = 2 - 2g$. Now by substitution we obtain the equation of the Euler Characteristic for open surfaces:
+\begin{equation*}
+    \chi = \chi^{'} - b = 2 - 2g - b
+\end{equation*}
+
+\section{Converting Representation}
+We have talked about the Parametric Representation and Implicit Representation for representing surfaces, let us now consider the problem of passing from one another.
+
+\subsection{Implicit to Parametric}
+Recall that a Implicit Representation consist in defining all points of mu surface as the zeroes of a function. The process to convert it into a parametric representation consists in applying an algorithm called Marching Cube. Before introducing it we explain its more simple 2D counterpart Marching Square.
+
+\subsubsection{Marching Square}
+
+Suppose I have an implicit function $f: \mathbb{R}^{2} \rightarrow \mathbb{R}$ s.t. $f(x,y) = c$ where $c \in \mathbb{R}$ is a constant value (usually 0). We know that implicit functions can be used to represent surfaces in a space: the point that define the shape are those whose $x$ and $y$ values that return the constant $c$ when given to $f$. Now, finding this point is a very complex problem that is impractical to solve using bruteforce. Instead we approximate the solution by subdividing the (2D) space into a grid and for each point of the grid we assign a binary value according to a given threshold $t$ s.t.:
+
+\[
+value(x, y) =
+\begin{cases}
+    1 \ \ \ if \ \  f(x, y) > t\\\
+    0 \ \ \ \ \ otherwise
+\end{cases}
+\]
+
+So the points whose value is 1 are inside the shape, while points with value 0 are outside the shape. Now our grid is made of cells, each cell has 4 vertices. Since each vertex is one of the points we have sampled, they can have at most 2 values (1 or 0), there are a total of $2^{4} = 16$ possible configurations of a cell:
+%Show all possible cases%
+So for all cells we check in which configuration in the lookup table the cell lies according to the values of its vertices and draw the contour passing through it using linear interpolation.
+
+\subsubsection{Marching Cubes}
+Marching Cubes is the same idea of Marching Squares only in a 3D setting. Given an implicit function $f: \mathbb{R}^{3} \rightarrow \mathbb{R}$ in the form $f(x,y,z) = c$ where $c$ is a constant. Thus the zeros of the function are the points of the solid defined by $f$. Like in the bidimensional case its impractical to try every possible values of x,y and z and check if is a point of the solid. Instead we approximate the solution by subdividing the (3D) space into a tridimensional grid and for each point of the grid we assign a binary value according to a given threshold $t$ s.t.:
+\[
+value(x, y, z) =
+\begin{cases}
+    1 \ \ \ if \ \  f(x, y, z) > t\\\
+    0 \ \ \ \ \ otherwise
+\end{cases}
+\]
+
+So the points whose value are 1 are inside the shape, while vertices with value 0 are outside the shape. Now our grid is made of cubes, each cube is made of 8 vertices. Since each vertex can have at most 2 values (1 or 0), there are a total of $2^8 = 256$ possible configurations of a cell. So for all cells we check in which configuration in the lookup table the cell lies and draw the contour passing through it accordingly. While in 2D the contour was made of lines, in 3D the contour is made of triangles. Although there are 256 possible configurations, they can be categorized in 15 cases, each having a group of configurations that are symmetrical from each other. Finally identified in which case its our cube we determine the triangles of the contour of our mesh through linear interpolation. A big drawback of Marching Cubes is that it could happen some ill-conditioned triangles will be generated.
+
+\subsection{Parametric to Implicit}
+Recall that an implicit representation consists in a function that defines if the points in our 3D space are part of the surface or not. So the idea is to construct a 3D grid that will approximate the implicit representation of the surface. Then for each node of the grid we check its distance to the closest triangle of the surface. Notice that this is a signed distance field, so other than the absolute distance we need to know if its outside the surface (positive sign) or inside of it (negative sign).\par
+Given the node of the grid $g$ and the closest point of the surface $c$, then the sign can be derived from the angle between the vector $g - c$ and the outer normal $n(c)$:
+\begin{itemize}
+    \item if $(g-c)^{T}n(c) < 0$ then the point $g$ is inside the surface.
+    \item if $(g-c)^{T}n(c) < 0$ then the point $g$ is outside the surface.
+\end{itemize}
+
+\subsection{Signed distance field}
+Consider a polygonal mesh of triangular faces as our parametric representation. The computation amounts to finding the distance of each point in the 3D mesh to a uniform and adaptive 3D grid. Computing the exact distance of a grid node to a given mesh requires to calculate the distance to the closest triangle.
+
+\subsubsection{Optimizing using the fast marching methods}
+Computing the distances on the entire grid can be accelerated by fast marching methods. In a first step, the exact signed distance values are computed for all grid nodes in the immediate vicinity of the triangle mesh. After this initialization, the fast marching method propagates distances to the remaining grid nodes with unknown distance value in a breadth-first manner.
+
+\section{Mesh Data Structures}
+As of today there is no standard regarding how to store meshes on disk. Different purposes requires different data structures, because they require to store different information of my (triangular) mesh. We will show some of the most common format.
+
+\subsection{Face Set (STL)}
+The simplest format. It consist of a collection of triangles $t_i$ that is defined by its three vertices vertices $v_{i}$. Each vertex $v_{i}$ is a triple containing its coordinate in a 3D space s.t. $v_{i} = <x_{i}, y_{i}, z_{i}>$.\par
+Since each triangle is independent from the others, then if two or more triangles share some vertex, it is stored multiple time in each triangle. So even though it is the same vertex, in the data structure is identified as totally different vertex that shares the same coordinates. It does not store any additional information. 
+
+\subsection{Operation I want to do on meshes}
+All the other formats have been made to help us execute these mesh operations:
+\begin{itemize}
+    \item Access individual vertices, edges, and faces. Thus we need to be able to enumerate all elements of the mesh in an unspecified order.
+    \item Oriented traversal of the edges of a face, which refers to finding the next (or previous) edge in a face.
+    \item Access to the incident faces of an edge. Depending on the orientation, this is either the left or right face assuming the mash is manifold.
+    \item Given an edge, access to its two endpoint vertices.
+    \item Given a vertex, at least one incident face or edge must be accessible. Then for manifold meshes all other elements in the so-called one-ring neighborhood of vertex can be enumerated.
+\end{itemize}
+
+\subsection{Shared Vertex (OBJ, OFF)}
+The OBJ and OFF format overcome the limitation of STL by unifying the vertices of the mesh. To do that the format define two collection: 
+\begin{itemize}
+    \item \textbf{Vertices:} containing all the vertices. Each vertex is a triple containing its coordinate in the 3D space.
+    \item \textbf{Triangles:} where each triangle is a triple of vertices from the Vertices collection.
+\end{itemize}
+These formats do not contain any adjacent information (e.g. knowing the triangle near the current one).
+
+\subsection{Face-Based Connectivity}
+With Face-Based Connectivity we identify a set of data structures that have a vertex object and face object s.t. in each of them there are stored the following information:
+
+\begin{itemize}
+    \item \textbf{Vertex}
+        \begin{itemize}
+            \item position of the vertex in the 3D space.
+            \item a pointer to a face that has that vertex.
+        \end{itemize}
+    \item \textbf{Face}
+        \begin{itemize}
+            \item the three vertices that define the face.
+            \item three pointers for each triangle in its neighbors.
+        \end{itemize}
+\end{itemize}
+
+Note that in a Face-Based Connectivity data structures there is no collection dedicated to storing edges information. The reason for missing the edges its because for the majority of 3D algorithms the edges are not necessary for their computation.
+
+\subsection{Edge-Based Connectivity}
+With Edge-Based Connectivity we identify a set of data structure that have a vertex object, an edge object and a face object s.t. in each of them there are stored the following information:
+
+\begin{itemize}
+    \item \textbf{Vertex}
+        \begin{itemize}
+            \item the 3D coordinates of the position of the vertex
+            \item a pointer to an edge that has that vertex.
+        \end{itemize}
+    \item \textbf{Edge}
+        \begin{itemize}
+            \item the pointers to the two vertex defining it.
+            \item the pointers to the two faces that have in common that edge.
+            \item the pointers to the four edges in its neighborhood.
+        \end{itemize}
+    \item \textbf{Face}
+        \begin{itemize}
+            \item the pointer to an edge that uses.
+        \end{itemize}
+\end{itemize}
+
+Resolving the query of identifying the vertex composing a face in an Edge-Based Connectivity data structure can be done in linear time by getting the pointer to the face, then getting the pointer to one of the edges of that face, from there I get the vertex composing that edge and repeating the process to the edge next to it stored as a pointer.
+
+\subsubsection{Halfedge}
+Given an edge $e$ that connects two vertices $v_{1}$ and $v_{2}$, it can be decomposed in two halfedges $h_{1}$ and $h_{2}$ where:
+\begin{itemize}
+    \item $h_{1}$ connects from $v_{1}$ to $v_{2}$
+    \item $h_{2}$ connects from $v_{2}$ to $v_{1}$
+\end{itemize}
+So $e$ is undirected, instead $h_{1}$ and $h_{2}$ are directed.\par
+This is done in order to sort the edges of each face and sort them in order to give all the faces of the mesh a consistent orientation: either counter-clockwise or clockwise. This works only to orientable meshes. For each halfedge we store:
+\begin{itemize}
+    \item A pointer to the next edge that shares the vertex it arrives to.
+    \item A pointer to the face that contains it.
+\end{itemize}
+
+\subsubsection{Operations on halfedges}
+Halfedges permits us to get the neighborhood of a vertex in constant time. This permits us to move a face more easily, since it requires to set a new position to all the vertex composing it.
+
+\subsection{Halfedge-Based Connectivity}
+Halfedge-based connectivity its a type of data structure where we store vertices, halfedges and faces s.t.:
+
+\begin{itemize}
+    \item Vertex
+        \begin{itemize}
+            \item contains its 3D coordinates.
+            \item a pointer to the halfedge that contains it.
+        \end{itemize}
+    \item Halfedge
+        \begin{itemize}
+            \item contains the pointer to the starting vertex.
+            \item contains the pointer to the face that contains it.
+            \item contains the pointer to the halfedge that shares its vertex of arrival. It can also contains the next two halfedges in the path.
+        \end{itemize}
+    \item Face
+        \begin{itemize}
+            \item a pointer to one of the halfedges that compose it.
+        \end{itemize}
+\end{itemize}
